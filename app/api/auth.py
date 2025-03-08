@@ -1,28 +1,38 @@
-from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, current_app
+from flask import Blueprint, request, jsonify, render_template, redirect, url_for, flash, current_app, session
 from flask_login import login_user, logout_user, login_required, current_user
-from werkzeug.urls import url_parse
 from datetime import datetime
+
+# Helper function for URL parsing compatibility with different Werkzeug versions
+def safe_url_parse(url):
+    """Parse a URL safely across different Werkzeug versions"""
+    try:
+        # Try newer Werkzeug versions
+        from werkzeug.urls import parse_url
+        return parse_url(url)
+    except ImportError:
+        # Fall back to older versions
+        from werkzeug.urls import url_parse
+        return url_parse(url)
 
 from .. import db, oauth
 from ..models.user import User, Role, init_roles
 
 auth = Blueprint('auth', __name__)
 
-# OAuth setup for Google
-google = oauth.remote_app(
-    'google',
-    consumer_key=lambda: current_app.config.get('GOOGLE_ID'),
-    consumer_secret=lambda: current_app.config.get('GOOGLE_SECRET'),
-    request_token_params={
-        'scope': 'email profile'
-    },
-    base_url='https://www.googleapis.com/oauth2/v1/',
-    request_token_url=None,
-    access_token_method='POST',
-    access_token_url='https://accounts.google.com/o/oauth2/token',
-    authorize_url='https://accounts.google.com/o/oauth2/auth'
-)
+# OAuth setup for Google with Authlib
+def setup_oauth(app):
+    oauth.register(
+        name='google',
+        client_id=app.config.get('GOOGLE_ID'),
+        client_secret=app.config.get('GOOGLE_SECRET'),
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid email profile'}
+    )
 
+@auth.record_once
+def on_load(state):
+    app = state.app
+    setup_oauth(app)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -43,7 +53,7 @@ def login():
             db.session.commit()
             
             next_page = request.args.get('next')
-            if not next_page or url_parse(next_page).netloc != '':
+            if not next_page or safe_url_parse(next_page).netloc != '':
                 next_page = url_for('main.index')
             
             return redirect(next_page)
@@ -113,36 +123,34 @@ def register():
 # OAuth routes
 @auth.route('/login/google')
 def google_login():
-    return google.authorize(callback=url_for('auth.google_authorized', _external=True))
+    redirect_uri = url_for('auth.google_authorized', _external=True)
+    return oauth.google.authorize_redirect(redirect_uri)
 
 
 @auth.route('/login/google/callback')
 def google_authorized():
-    resp = google.authorized_response()
-    if resp is None or resp.get('access_token') is None:
-        flash('Access denied: reason={0} error={1}'.format(
-            request.args['error_reason'],
-            request.args['error_description']
-        ))
+    try:
+        token = oauth.google.authorize_access_token()
+        resp = oauth.google.parse_id_token(token)
+        user_info = resp
+    except Exception as e:
+        flash(f'Access denied: {str(e)}')
         return redirect(url_for('auth.login'))
     
-    # Get user info from Google
-    me = google.get('userinfo')
-    
     # Check if user exists with this OAuth ID
-    user = User.query.filter_by(oauth_id=me.data['id'], oauth_provider='google').first()
+    user = User.query.filter_by(oauth_id=user_info['sub'], oauth_provider='google').first()
     
     if not user:
         # Check if user exists with this email
-        user = User.query.filter_by(email=me.data['email']).first()
+        user = User.query.filter_by(email=user_info['email']).first()
         
         if user:
             # Update existing user with OAuth info
-            user.oauth_id = me.data['id']
+            user.oauth_id = user_info['sub']
             user.oauth_provider = 'google'
         else:
             # Create new user
-            username = me.data['email'].split('@')[0]
+            username = user_info['email'].split('@')[0]
             base_username = username
             counter = 1
             
@@ -160,10 +168,10 @@ def google_authorized():
             
             user = User(
                 username=username,
-                email=me.data['email'],
-                oauth_id=me.data['id'],
+                email=user_info['email'],
+                oauth_id=user_info['sub'],
                 oauth_provider='google',
-                profile_picture=me.data.get('picture'),
+                profile_picture=user_info.get('picture'),
                 role=user_role
             )
             
@@ -176,7 +184,7 @@ def google_authorized():
     flash('You have been logged in.')
     
     next_page = request.args.get('next')
-    if not next_page or url_parse(next_page).netloc != '':
+    if not next_page or safe_url_parse(next_page).netloc != '':
         next_page = url_for('main.index')
     
     return redirect(next_page)

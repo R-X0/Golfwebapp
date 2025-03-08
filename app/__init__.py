@@ -2,14 +2,14 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
-from flask_oauthlib.client import OAuth
+from authlib.integrations.flask_client import OAuth  # Changed from flask_oauthlib
 from flask_cors import CORS
 
 # Initialize extensions
 db = SQLAlchemy()
 migrate = Migrate()
 login_manager = LoginManager()
-oauth = OAuth()
+oauth = OAuth()  # This is now Authlib's OAuth
 cors = CORS()
 
 def create_app(config_name='development'):
