@@ -1,0 +1,393 @@
+<!-- templates/main/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pars.Golf - Community-Powered Golf Recommendations</title>
+    <style>
+        :root {
+            --primary: #3A4257;
+            --red: #A24936;
+            --yellow: #FFBC42;
+            --lavender: #E2B6CF;
+            --cadet-grey: #83A0A0;
+            --light-grey: #f5f5f5;
+            --dark-grey: #333;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-grey);
+            color: var(--dark-grey);
+        }
+        
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo h1 {
+            margin: 0;
+            font-size: 1.8rem;
+        }
+        
+        nav ul {
+            list-style: none;
+            display: flex;
+            margin: 0;
+            padding: 0;
+        }
+        
+        nav li {
+            margin-left: 1.5rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        nav a:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        
+        .hero {
+            background-color: var(--primary);
+            color: white;
+            padding: 3rem 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .hero h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 800px;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            background-color: var(--yellow);
+            color: var(--primary);
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
+            font-weight: bold;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .cta-button:hover {
+            background-color: #e6a93b;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .card {
+            background-color: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-image {
+            height: 180px;
+            background-color: var(--cadet-grey);
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .card-content {
+            padding: 1.2rem;
+        }
+        
+        .card-title {
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+        }
+        
+        .card-description {
+            margin-bottom: 1rem;
+            color: #666;
+        }
+        
+        .card-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #888;
+            font-size: 0.9rem;
+        }
+        
+        .vote-buttons {
+            display: flex;
+            align-items: center;
+        }
+        
+        .vote-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: #888;
+            padding: 0.2rem;
+        }
+        
+        .vote-button.up:hover, .vote-button.up.active {
+            color: var(--red);
+        }
+        
+        .vote-button.down:hover, .vote-button.down.active {
+            color: var(--lavender);
+        }
+        
+        .vote-count {
+            margin: 0 0.5rem;
+            font-weight: bold;
+        }
+        
+        footer {
+            background-color: var(--primary);
+            color: white;
+            padding: 2rem 1rem;
+            margin-top: 3rem;
+        }
+        
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        
+        .footer-section {
+            flex: 1;
+            min-width: 250px;
+            margin-bottom: 1.5rem;
+        }
+        
+        .footer-section h3 {
+            margin-top: 0;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .footer-section li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer-section a {
+            color: #ddd;
+            text-decoration: none;
+        }
+        
+        .footer-section a:hover {
+            color: white;
+            text-decoration: underline;
+        }
+        
+        .copyright {
+            text-align: center;
+            margin-top: 2rem;
+            padding-top: 1rem;
+            border-top: 1px solid #5a607a;
+            width: 100%;
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            nav ul {
+                margin-top: 1rem;
+            }
+            
+            nav li {
+                margin: 0 0.75rem;
+            }
+            
+            .hero h2 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">
+                <h1>Pars.Golf</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Clubs</a></li>
+                    <li><a href="#">Players</a></li>
+                    <li><a href="#">Courses</a></li>
+                    {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('auth.logout') }}">Logout</a></li>
+                    {% else %}
+                        <li><a href="{{ url_for('auth.login') }}">Login</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <section class="hero">
+        <h2>Community-Powered Golf Recommendations</h2>
+        <p>Discover the best golf clubs, players, and courses voted by the golf community. Share your own experiences and help others find their perfect match.</p>
+        <a href="#" class="cta-button">Explore Clubs</a>
+    </section>
+    
+    <div class="container">
+        <section>
+            <h2 class="section-title">Top Rated Clubs</h2>
+            <div class="card-grid">
+                {% for i in range(3) %}
+                <div class="card">
+                    <div class="card-image" style="background-color: #83A0A0;"></div>
+                    <div class="card-content">
+                        <h3 class="card-title">Sample Club {{ i + 1 }}</h3>
+                        <p class="card-description">A fantastic club with amazing features that golfers love.</p>
+                        <div class="card-meta">
+                            <span>Brand Name</span>
+                            <div class="vote-buttons">
+                                <button class="vote-button up">↑</button>
+                                <span class="vote-count">{{ 50 - i * 10 }}</span>
+                                <button class="vote-button down">↓</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        
+        <section style="margin-top: 3rem;">
+            <h2 class="section-title">Popular Players</h2>
+            <div class="card-grid">
+                {% for i in range(3) %}
+                <div class="card">
+                    <div class="card-image" style="background-color: #E2B6CF;"></div>
+                    <div class="card-content">
+                        <h3 class="card-title">Player Name {{ i + 1 }}</h3>
+                        <p class="card-description">Professional golfer with an impressive career and numerous achievements.</p>
+                        <div class="card-meta">
+                            <span>World Rank: #{{ i + 1 }}</span>
+                            <div class="vote-buttons">
+                                <button class="vote-button up">↑</button>
+                                <span class="vote-count">{{ 45 - i * 8 }}</span>
+                                <button class="vote-button down">↓</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        
+        <section style="margin-top: 3rem;">
+            <h2 class="section-title">Featured Courses</h2>
+            <div class="card-grid">
+                {% for i in range(3) %}
+                <div class="card">
+                    <div class="card-image" style="background-color: #FFBC42;"></div>
+                    <div class="card-content">
+                        <h3 class="card-title">Golf Course {{ i + 1 }}</h3>
+                        <p class="card-description">A beautiful course with challenging holes and stunning landscapes.</p>
+                        <div class="card-meta">
+                            <span>Location, State</span>
+                            <div class="vote-buttons">
+                                <button class="vote-button up">↑</button>
+                                <span class="vote-count">{{ 40 - i * 7 }}</span>
+                                <button class="vote-button down">↓</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Pars.Golf</h3>
+                <p>Community-powered golf recommendations to help you improve your game and enjoy golf more.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Links</h3>
+                <ul>
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">Clubs</a></li>
+                    <li><a href="#">Players</a></li>
+                    <li><a href="#">Courses</a></li>
+                    <li><a href="#">About Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Connect</h3>
+                <ul>
+                    <li><a href="#">Contact Us</a></li>
+                    <li><a href="#">Twitter</a></li>
+                    <li><a href="#">Facebook</a></li>
+                    <li><a href="#">Instagram</a></li>
+                </ul>
+            </div>
+            <div class="copyright">
+                &copy; 2025 Pars.Golf. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

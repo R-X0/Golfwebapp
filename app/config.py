@@ -5,13 +5,15 @@ class Config:
     """Base config."""
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-for-development-only')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'postgresql://postgres:postgres@localhost/pars_golf')
     
-    # Golf API Configuration
+    # Use SQLite as fallback for easier setup
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'sqlite:///pars_golf.db')
+    
+    # Golf API Configuration with safe defaults
     GOLF_API_KEY = os.environ.get('GOLF_API_KEY', '')
-    GOLF_API_BASE_URL = 'https://golf-api.example.com'  # Replace with actual GolfAPI.io URL
+    GOLF_API_BASE_URL = os.environ.get('GOLF_API_BASE_URL', 'https://golf-api.example.com')
     
-    # OAuth Configuration
+    # OAuth Configuration with safe defaults
     GOOGLE_ID = os.environ.get('GOOGLE_ID', '')
     GOOGLE_SECRET = os.environ.get('GOOGLE_SECRET', '')
     
@@ -26,6 +28,11 @@ class Config:
     
     # Pars.Golf Specific Configuration
     ITEMS_PER_PAGE = 20
+    
+    # Ensure upload directory exists
+    @staticmethod
+    def init_app(app):
+        os.makedirs(Config.UPLOAD_FOLDER, exist_ok=True)
 
 
 class DevelopmentConfig(Config):
@@ -37,7 +44,7 @@ class DevelopmentConfig(Config):
 class TestingConfig(Config):
     """Testing config."""
     TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:postgres@localhost/pars_golf_test'
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///pars_golf_test.db'
     WTF_CSRF_ENABLED = False
 
 
